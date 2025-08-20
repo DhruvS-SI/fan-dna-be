@@ -1,39 +1,27 @@
-const { transaction } = require('../storage/db');
+const { sql } = require('../storage/db');
 
-async function saveEngagementBatch(payload, cookieUserId) {
-  // Expect batches of N; insert in a single transaction
+async function saveEngagementBatch(payload, userId) {
+  // Expect payload to be an array of objects, pass through as JSONB to the SP
   if (!Array.isArray(payload)) {
     throw new Error('Payload must be an array of engagements');
   }
 
-  const insertedRows = await transaction(async (client) => {
-    const values = [];
-    const params = [];
-    let paramIndex = 1;
-    for (const item of payload) {
-      const { contentId, action } = item;
-      const userId = cookieUserId;
-      if (!userId || !contentId || !action) {
-        throw new Error('Each engagement must include contentId and action; userId is taken from cookie');
-      }
-      // ($userId, $contentId, $action, COALESCE($ts, NOW()))
-      values.push(`($${paramIndex}, $${paramIndex + 1}, $${paramIndex + 2}, COALESCE($${paramIndex + 3}, NOW()))`);
-      params.push(userId, contentId, action);
-      paramIndex += 4;
+  // Validate: ensure each item has content_id
+  for (const item of payload) {
+    if (!item || item.content_id === undefined || item.content_id === null) {
+      throw new Error('Each item must include content_id');
     }
-    if (values.length === 0) return [];
-    const query = `
-      INSERT INTO engagements (user_id, content_id, action)
-      VALUES ${values.join(', ')}
-      RETURNING *
-    `;
-    const { rows } = await client.query(query, params);
-    return rows;
-  });
+  }
 
-  return insertedRows;
+  if (payload.length > 0) {
+    await sql(
+      'SELECT entity_based_data.update_user_affinity($1::varchar, $2::jsonb)',
+      [String(userId), JSON.stringify(payload)]
+    );
+  }
+
+  // Return original payload as requested
+  return payload;
 }
 
 module.exports = { saveEngagementBatch };
-
-

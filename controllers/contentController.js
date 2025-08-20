@@ -5,7 +5,6 @@ async function getContent(req, res, next) {
   try {
     const { type } = req.query;
     const userId = req.cookies.userId; // get cookie
-    console.log("userId", userId);
 
     let contentItems = [];
     if(userId) {
