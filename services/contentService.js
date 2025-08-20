@@ -1,11 +1,9 @@
 const { sql } = require('../storage/db');
 
 async function fetchContent({ type }) {
-  // Simple example: filter by type if provided, otherwise return random sample
-  if (type) {
-    return sql('SELECT * FROM content WHERE type = $1 ORDER BY created_at DESC LIMIT 50', [type]);
-  }
-  return sql('SELECT * FROM content ORDER BY random() LIMIT 50');
+  // Call the stored function in schema entity_based_data
+  // Assumes signature entity_based_data.get_content(type TEXT)
+  return sql('SELECT * FROM entity_based_data.get_content(null)');
 }
 
 module.exports = { fetchContent };

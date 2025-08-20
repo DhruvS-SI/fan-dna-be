@@ -3,8 +3,6 @@ const express = require('express');
 const cors = require('cors');
 const { pool } = require('./storage/db');
 
-//1.getcontent , 2,input content  iD
-
 
 
 const app = express();
@@ -56,6 +54,7 @@ app.use((req, res) => {
 
 
 
+
 app.use((err, req, res, next) => {
     console.error(err);
     const statusCode = err.status || 500;
@@ -67,7 +66,7 @@ app.use((err, req, res, next) => {
 async function start() {
   try {
     // Verify DB connectivity before starting the server
-    // await pool.query('SELECT 1');
+    await pool.query('SELECT 1');
     app.listen(PORT, () => {
       console.log(`Server listening on port ${PORT}`);
     });
