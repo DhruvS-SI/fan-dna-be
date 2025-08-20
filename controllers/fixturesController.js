@@ -4,16 +4,21 @@ const fixturesService = require('../services/fixturesService');
 async function getFixtures(req, res, next) {
   try {
     const { type } = req.query;
-    const userId = req.cookies.userId;
+    const userIdFromPayload = req.body?.userId;
+    const userId = typeof userIdFromPayload === 'string' && userIdFromPayload.trim().length > 0
+      ? userIdFromPayload.trim()
+      : req.cookies.userId;
 
     let items = [];
-    if (!userId) {
-      items = await fixturesService.fetchFixtures({ type });
-      res.json(items);
+
+    if (userId && userId.length > 0) {
+      items = await fixturesService.fetchPersonalisedFixtures({ type, userId, limit: 10 });
+      return res.json(items[0]?.get_personalized_fixture_1?.matches);
     } else {
-      items = await fixturesService.fetchPersonalisedFixtures({ type, userId });
-      res.json(items);
+      items = await fixturesService.fetchFixtures({ type });
+      return res.json(items[0]?.get_fixture_listing);
     }
+    // res.json(items);
   } catch (error) {
     next(error);
   }

@@ -24,19 +24,11 @@ async function fetchFunFacts({ entity1, entity2 }) {
   return rows;
 }
 
-async function generateFunFact({ entity1, entity2, entities }) {
-  const entitiesString = entities
-    ? String(entities)
-    : [entity1, entity2].filter(Boolean).join(' and ');
+async function generateFunFact({ entity }) {
+  console.log('generateFunFact', entity);
 
-  if (!entitiesString) {
-    const err = new Error('Missing required entities to generate fun fact');
-    err.status = 400;
-    throw err;
-  }
-
-  const prompt = `Give me one short, interesting, verifiable cricket related fun fact about ${entitiesString}. Keep it to one sentence it should have catchy words.`;
-
+  const prompt = `Give me one short, interesting, verifiable cricket related fun fact about ${entity}. Keep it to one sentence it should have catchy words.`;
+  // console.log('prompt', prompt);
   const body = JSON.stringify({
     model: 'openai/gpt-oss-20b:fireworks-ai',
     messages: [{ role: 'user', content: prompt }],
@@ -50,6 +42,7 @@ async function generateFunFact({ entity1, entity2, entities }) {
     },
     body,
   });
+  // console.log('res', res);
 
   const json = await res.json();
   const raw = json?.choices?.[0]?.message?.content ?? '';

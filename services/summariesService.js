@@ -108,13 +108,6 @@ function formatOverForDisplay(overStr) {
   return String(over);
 }
 
-// Parses various speed formats into a numeric KPH value.
-// Accepts values like:
-//   - 146.3
-//   - "146.3"
-//   - "146.3 km/h", "146 kmph", "146 kph"
-//   - "90.5 mph" (converted to kph)
-//   - "40.6 m/s" (converted to kph)
 function parseSpeedToKph(value) {
   if (value === undefined || value === null) return null;
   const raw = String(value).trim();
