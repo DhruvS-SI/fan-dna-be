@@ -42,6 +42,8 @@ const userDNARouter = require('./routes/userDNA');
 const funfactsRouter = require('./routes/funfacts');
 const summariesRouter = require('./routes/summaries');
 const engagementsRouter = require('./routes/engagements');
+const fixturesRouter = require('./routes/fixtures');
+const loginRouter = require('./routes/login');
 
 app.use('/', checkRouter);
 app.use('/health', healthRouter);
@@ -50,6 +52,8 @@ app.use('/userDNA', userDNARouter);
 app.use('/funfacts', funfactsRouter);
 app.use('/summaries', summariesRouter);
 app.use('/engagements', engagementsRouter);
+app.use('/fixtures', fixturesRouter);
+app.use('/login', loginRouter);
 
 app.use((req, res) => {
   res.status(404).json({ error: 'Not found' });

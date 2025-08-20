@@ -4,8 +4,20 @@ const contentService = require('../services/contentService');
 async function getContent(req, res, next) {
   try {
     const { type } = req.query;
-    const contentItems = await contentService.fetchContent({ type });
-    res.send(contentItems);
+    const userId = req.cookies.userId; // get cookie
+    console.log("userId", userId);
+
+    let contentItems = [];
+    if(userId) {
+      contentItems = await contentService.fetchContent({ type });
+      res.send(contentItems?.[0]?.get_content);
+    } else {
+      contentItems = await contentService.fetchPersonalisedContent({ type, userId });
+      res.send(contentItems,);
+    }
+
+
+    
   } catch (error) {
     next(error);
   }

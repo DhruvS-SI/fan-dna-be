@@ -3,9 +3,9 @@ const engagementsService = require('../services/engagementsService');
 // POST /engagements
 async function postEngagements(req, res, next) {
   try {
-    const payload = req.body;
-    const result = await engagementsService.saveEngagementBatch(payload);
-    res.status(201).json({ data: result });
+    const { payload, userId } = req.body || {};
+    const rows = await engagementsService.saveEngagementBatch(payload, userId);
+    res.status(201).json(rows);
   } catch (error) {
     next(error);
   }
