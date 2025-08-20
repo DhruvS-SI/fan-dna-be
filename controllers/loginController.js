@@ -1,10 +1,8 @@
 // POST /login
 async function postLogin(req, res, next) {
   try {
-    const { userId, maxAgeMs } = req.body || {};
-    if (!userId || typeof userId !== 'string' || userId.trim().length === 0) {
-      return res.status(400).json({ error: 'Missing or invalid userId' });
-    }
+    const { maxAgeMs } = req.body || {};
+ 
 
     
 
