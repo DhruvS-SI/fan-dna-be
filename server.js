@@ -66,7 +66,7 @@ app.use((err, req, res, next) => {
 async function start() {
   try {
     // Verify DB connectivity before starting the server
-    await pool.query('SELECT 1');
+    // await pool.query('SELECT 1');
     app.listen(PORT, () => {
       console.log(`Server listening on port ${PORT}`);
     });
