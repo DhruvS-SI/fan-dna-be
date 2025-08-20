@@ -15,7 +15,7 @@ async function getContent(req, res, next) {
       res.send(contentItems);
     } else {
       contentItems = await contentService.fetchContent({ type });
-      res.send(contentItems);
+      res.send(contentItems?.[0]?.get_content);
     }
 
 
