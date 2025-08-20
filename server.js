@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const { pool } = require('./storage/db');
+const cookieParser = require("cookie-parser");
 
 
 
@@ -30,6 +31,8 @@ const corsOptions = {
 // Core middleware
 app.use(cors(corsOptions)); // Enable CORS for all routes
 app.use(express.json());
+app.use(cookieParser());
+
 
 // Route modules
 const checkRouter = require('./routes/check');

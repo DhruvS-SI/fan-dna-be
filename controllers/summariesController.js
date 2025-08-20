@@ -18,7 +18,7 @@ async function getSummaries(req, res, next) {
     const summaryFromAI = await summariesService.generateSummary(summaryRaw);
 
 
-    res.json({ data: summaryFromAI, TotalScore: summaryRaw.TotalScore });
+    res.json({ data: summaryFromAI, TotalScore: summaryRaw.TotalScore, TotalSixes: summaryRaw.TotalSixes, TotalFours: summaryRaw.TotalFours, TotalBoundaryRuns: summaryRaw.TotalBoundaryRuns, HighestBallSpeed: summaryRaw.HighestBallSpeed });
   } catch (error) {
     next(error);
   }
