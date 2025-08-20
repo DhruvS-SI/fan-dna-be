@@ -40,6 +40,18 @@ function extractEvents(raw) {
  
 
   return list.map((item) => {
+    function extractBallSpeed(obj) {
+      const direct = obj.Ball_Speed ?? obj.ball_speed ?? obj.Speed ?? obj.speed ?? null;
+      if (direct !== null && direct !== undefined) return direct;
+      // fallback: scan keys containing 'speed'
+      for (const key of Object.keys(obj)) {
+        if (/speed/i.test(key)) {
+          const val = obj[key];
+          if (val !== undefined && val !== null && String(val).trim().length > 0) return val;
+        }
+      }
+      return null;
+    }
     return {
       Over: item.Over ?? null,
       Ball_Number: item.Ball_Number ?? item.ball_number ?? item.ballNumber ?? null,
@@ -51,6 +63,7 @@ function extractEvents(raw) {
       Bowler_Name: item.Bowler_Name ?? item.bowler_name ?? item.bowler ?? item.Bowler ?? null,
       Batsman_Name: item.Batsman_Name ?? item.batsman_name ?? item.batter_name ?? item.batsman ?? null,
       Non_Striker_Name: item.Non_Striker_Name ?? item.non_striker_name ?? item.nonStriker ?? item.non_striker ?? null,
+      Ball_Speed: extractBallSpeed(item),
     };
   });
 }
@@ -95,6 +108,31 @@ function formatOverForDisplay(overStr) {
   return String(over);
 }
 
+// Parses various speed formats into a numeric KPH value.
+// Accepts values like:
+//   - 146.3
+//   - "146.3"
+//   - "146.3 km/h", "146 kmph", "146 kph"
+//   - "90.5 mph" (converted to kph)
+//   - "40.6 m/s" (converted to kph)
+function parseSpeedToKph(value) {
+  if (value === undefined || value === null) return null;
+  const raw = String(value).trim();
+  if (raw.length === 0) return null;
+  const match = raw.match(/([0-9]+(?:\.[0-9]+)?)/);
+  if (!match) return null;
+  const numeric = Number(match[1]);
+  if (!Number.isFinite(numeric)) return null;
+  const lower = raw.toLowerCase();
+  if (lower.includes('mph')) {
+    return numeric * 1.60934;
+  }
+  if (/(m\/?s)/i.test(raw)) {
+    return numeric * 3.6;
+  }
+  return numeric; // Assume already kph
+}
+
 async function fetchSummaries({ id, url }) {
   const targetUrl = url || (summariesBaseUrl ? `${summariesBaseUrl.replace(/\/$/, '')}/${summariesPathPrefix}${id}${summariesFileSuffix}` : 'https://www.punjabkingsipl.in/cricket/live/json/bckp06032025260875_commentary_all_2.json');
   const raw = await fetchJson(targetUrl);
@@ -110,8 +148,26 @@ async function fetchSummaries({ id, url }) {
     const overDisplay = formatOverForDisplay(latest.over);
     totalScore = latest.score ? `${latest.score}${overDisplay ? ` (${overDisplay})` : ''}` : null;
   }
-  console.log("totalScore", totalScore);
-  return { ...meta, TotalScore: totalScore, Commentary: events };
+  // Aggregate boundaries (4s and 6s)
+  let totalSixes = 0;
+  let totalFours = 0;
+  for (const ev of Array.isArray(events) ? events : []) {
+    const runs = Number(ev.Runs);
+    if (Number.isFinite(runs)) {
+      if (runs === 6) totalSixes += 1;
+      else if (runs === 4) totalFours += 1;
+    }
+  }
+  const totalBoundaryRuns = totalSixes * 6 + totalFours * 4;
+  // Highest ball speed
+  let highestBallSpeed = null;
+  for (const ev of Array.isArray(events) ? events : []) {
+    const speedKph = parseSpeedToKph(ev.Ball_Speed);
+    if (speedKph !== null && speedKph > 0) {
+      if (highestBallSpeed === null || speedKph > highestBallSpeed) highestBallSpeed = speedKph;
+    }
+  }
+  return { ...meta, TotalScore: totalScore, TotalSixes: totalSixes, TotalFours: totalFours, TotalBoundaryRuns: totalBoundaryRuns, HighestBallSpeed: highestBallSpeed, Commentary: events };
 }
 
 async function generateSummary(payload) {
