@@ -13,7 +13,7 @@ const poolConfig = {
   max: Number(process.env.PG_POOL_MAX || 10),
   idleTimeoutMillis: Number(process.env.PG_IDLE_TIMEOUT_MS || 30000),
   connectionTimeoutMillis: Number(process.env.PG_CONN_TIMEOUT_MS || 5000),
-  ssl: process.env.PG_SSL?.toLowerCase() === 'true' ? { rejectUnauthorized: false } : undefined,
+  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : undefined,
 };
 
 const pool = new Pool(poolConfig);
