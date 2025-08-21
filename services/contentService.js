@@ -8,14 +8,33 @@ async function fetchContent({ type }) {
 }
 
 
-async function fetchPersonalisedContent({ type, userId = '1234' }) {
+async function fetchPersonalisedContent({ type, userId  }) {
   // Expand composite rows into JSON objects directly from SQL
-  const query = `
-    SELECT to_jsonb(t) AS item
-    FROM entity_based_data.get_personalized_feed($1::text, 10) AS t
-  `;
-  const rows = await sql(query, [userId]);
-  return rows.map(r => r.item);
+  let query = `select entity_based_data.get_personalized_feed_fixed_1('${userId}')`;
+  // const query = `
+  //   SELECT to_jsonb(t) AS item
+  //   FROM entity_based_data.get_personalized_feed_fixed_1($1::text, 10) AS t
+  // `;
+
+  const rows = await sql(query);
+
+  const result = rows?.[0]?.get_personalized_feed_fixed_1;
+  // Flatten values from all keys into a single array
+  if (result && typeof result === 'object' && !Array.isArray(result)) {
+    const merged = Object.values(result).reduce((acc, value) => {
+      if (Array.isArray(value)) {
+        acc.push(...value);
+      } else if (value !== null && value !== undefined) {
+        acc.push(value);
+      }
+      return acc;
+    }, []);
+    return merged;
+  }
+  if (Array.isArray(result)) return result;
+
+  if (result === null || result === undefined) return [];
+  return [result];  
 }
 
 module.exports = { fetchContent, fetchPersonalisedContent };

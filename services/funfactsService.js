@@ -45,7 +45,11 @@ async function generateFunFact({ entity }) {
   // console.log('res', res);
 
   const json = await res.json();
-  const raw = json?.choices?.[0]?.message?.content ?? '';
+  let raw = json?.choices?.[0]?.message?.content ?? '';
+  if(raw == "") {
+    let data = await sql(`select get_random_funfact()`);
+    raw = data?.[0]?.get_random_funfact?.fact;
+  }
   return String(raw)
     .replace(/\\n/g, ' ')
     .replace(/\s*\n\s*/g, ' ')
@@ -53,6 +57,7 @@ async function generateFunFact({ entity }) {
     .trim()
     .replace(/^"|"$/g, '');
 }
+
 
 module.exports = { fetchFunFacts, generateFunFact };
 module.exports.isAnyEntityKnown = isAnyEntityKnown;
