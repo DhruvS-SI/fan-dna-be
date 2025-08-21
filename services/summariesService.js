@@ -164,6 +164,7 @@ async function fetchSummaries({ id, url }) {
 }
 
 async function generateSummary(payload) {
+
   const prompt = `You are a cricket commentator. Write ONLY a short, classic, catchy summary of the inning in 5-6 lines.
   - Mention team names if present.
   - Do NOT give ball-by-ball details.
@@ -171,10 +172,16 @@ async function generateSummary(payload) {
   - Do NOT add or assume any extra information.
   JSON DATA: ${JSON.stringify(payload)}`;
 
+  console.log('prompt', prompt);
+
   const body = JSON.stringify({
     model: 'openai/gpt-oss-20b:fireworks-ai',
     messages: [{ role: 'user', content: prompt }],
   });
+
+
+
+  
 
   const res = await fetch('https://router.huggingface.co/v1/chat/completions', {
     method: 'POST',
@@ -184,6 +191,7 @@ async function generateSummary(payload) {
     },
     body,
   });
+  console.log('body', res);
   const json = await res.json();
   const raw = json?.choices?.[0]?.message?.content ?? '';
   return String(raw)
